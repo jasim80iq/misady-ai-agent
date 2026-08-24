@@ -9,7 +9,7 @@ st.header("💬 المساعد العام")
 # جلب مفتاح الـ API من Secrets
 if "GEMINI_API_KEY" in st.secrets:
     genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
-    model = genai.GenerativeModel("gemini-1.5-flash")
+    model = genai.GenerativeModel("gemini-2.0-flash")
 else:
     st.error("يرجى إضافة GEMINI_API_KEY في إعدادات Secrets.")
 
@@ -27,5 +27,3 @@ if st.button("تنفيذ"):
                 st.error(f"حدث خطأ: {e}")
     else:
         st.warning("يرجى كتابة نص قبل الضغط على تنفيذ.")
-
-st.caption('مساعدي الذكي — Prototype 0.1')

@@ -6,7 +6,7 @@ st.caption("الوكيل العراقي متعدد المهام — الإصدا
 
 st.header("💬 المساعد العام")
 
-# تعليمات النظام لضمان إجابة مباشرة ونظيفة بالعراقية
+# تعليمات النظام لضمان إجابة مباشرة ونظيفة باللهجة العراقية
 SYSTEM_PROMPT = """
 أنت "مدير مزارع"، مساعد ذكي يتحدث باللهجة العراقية العفوية والعربية البسيطة.
 واجبك الإجابة على سؤال المستخدم مباشرة بشكل محترم ومنظم.
@@ -23,17 +23,9 @@ if st.button("تنفيذ"):
             genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
             with st.spinner("جاري التفكير..."):
                 try:
-                    # جلب الموديلات المتاحة تلقائياً
-                    available = [
-                        m.name for m in genai.list_models() 
-                        if 'generateContent' in m.supported_generation_methods
-                    ]
-                    
-                    # اختيار أفضل موديل متاح
-                    chosen_model = next((m for m in available if 'flash' in m), available[0] if available else "gemini-1.5-flash")
-                    
+                    # استخدام الموديل الحديث المعتمد مباشرة
                     model = genai.GenerativeModel(
-                        model_name=chosen_model,
+                        model_name="gemini-3.6-flash",
                         system_instruction=SYSTEM_PROMPT
                     )
                     

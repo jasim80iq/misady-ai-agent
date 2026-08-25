@@ -37,9 +37,9 @@ if submit:
         with st.spinner("Generating image..."):
             try:
                 img_res = client.images.generate(
-                    model="dall-e-3",
+                    model="dall-e-2",
                     prompt=f"Professional product photography of {prompt}",
-                    size="1024x1024",
+                    size="512x512",
                     n=1
                 )
                 img_url = img_res.data[0].url

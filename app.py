@@ -17,7 +17,17 @@ if st.button("توليد الصورة والبوست"):
     if not gemini_key:
         st.error("يرجى إدخال مفتاح Gemini في الشريط الجانبي أولاً!")
     else:
-        # 1. توليد النص باستخدام Gemini المجاني (gemini-3.6-flash)
+        # 1. توليد وعرض الصورة أولاً لتظهر مباشرة
+        with st.spinner("جاري تصميم الصورة..."):
+            try:
+                encoded_prompt = urllib.parse.quote(prompt_input)
+                image_url = f"https://image.pollinations.ai/prompt/{encoded_prompt}?width=1024&height=1024&nologo=true"
+                st.subheader("🖼️ الصورة:")
+                st.image(image_url)
+            except Exception as e:
+                st.error(f"خطأ في توليد الصورة: {e}")
+
+        # 2. توليد وعرض المنشور النصي بعدها
         with st.spinner("جاري كتابة المنشور..."):
             try:
                 clean_key = gemini_key.strip()
@@ -40,13 +50,3 @@ if st.button("توليد الصورة والبوست"):
                     st.error(f"استجابة غير متوقعة: {res}")
             except Exception as e:
                 st.error(f"خطأ في الاتصال: {e}")
-
-        # 2. توليد الصورة مجاناً وبدون مفتاح (Pollinations)
-        with st.spinner("جاري تصميم الصورة..."):
-            try:
-                encoded_prompt = urllib.parse.quote(prompt_input)
-                image_url = f"https://image.pollinations.ai/prompt/{encoded_prompt}?width=1024&height=1024&nologo=true"
-                st.subheader("🖼️ الصورة:")
-                st.image(image_url)
-            except Exception as e:
-                st.error(f"خطأ في توليد الصورة: {e}")

@@ -9,13 +9,17 @@ st.set_page_config(
     layout="centered"
 )
 
-# Custom Styling for Arabic RTL layout
+# Custom Styling for Arabic RTL layout & fixing text wrapping
 st.markdown("""
 <style>
-    body, [class*="css"] {
+    .stApp {
         direction: rtl;
         text-align: right;
-        font-family: 'Cairo', sans-serif;
+    }
+    p, h1, h2, h3, h4, h5, h6, label, span, div {
+        direction: rtl !important;
+        text-align: right !important;
+        font-family: sans-serif;
     }
     .stButton>button {
         width: 100%;
@@ -36,11 +40,11 @@ st.write("أهلاً بك يا جاسم! من خلال هذه الواجهة، �
 
 # Sidebar for API Keys configuration
 with st.sidebar:
-    st.header("🔑 إعدادات المفاتيح (API Keys)")
+    st.header("🔑 إعدادات المفاتيح")
     openai_api_key = st.text_input("مفتاح OpenAI API Key", type="password")
     fb_page_id = st.text_input("معرف صفحة فيسبوك (Page ID)")
-    fb_access_token = st.text_input("توكن وصول الصفحة (Page Access Token)", type="password")
-    st.info("قم بإدخال المفاتيح الخاصة بك لتفعيل ميزات التوليد والنشر.")
+    fb_access_token = st.text_input("توكن صفحة فيسبوك (Page Access Token)", type="password")
+    st.info("قم بإدخال مفتاح OpenAI أولاً لتفعيل التوليد.")
 
 # Main Form
 with st.form("publishing_form"):
@@ -115,8 +119,8 @@ if submitted:
                         if "id" in res_data:
                             st.success("🎉 تم النشر بنجاح على صفحتك في فيسبوك!")
                         else:
-                            st.warning(f"تم توليد المحتوى ولكن تعذر النشر التلقائي عبر ميتا: {res_data.get('error', {}).get('message', 'خطأ غير معروف')}")
+                            st.warning(f"تم توليد المحتوى ولكن تعذر النشر التلقائي: {res_data.get('error', {}).get('message', 'خطأ غير معروف')}")
                     except Exception as ex:
-                        st.error(f"خطأ في الاتصال بواجهة برمجة تطبيقات فيسبوك: {ex}")
+                        st.error(f"خطأ في الاتصال بواجهة فيسبوك: {ex}")
             else:
-                st.info("💡 ملاحظة: لم يتم إدخال بيانات فيسبوك، لذا تم عرض النتيجة لك هنا للمراجعة.")
+                st.info("💡 لم يتم إدخال بيانات فيسبوك، تم عرض النتيجة لك هنا للمراجعة.")

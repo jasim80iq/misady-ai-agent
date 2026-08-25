@@ -3,7 +3,7 @@ import requests
 import urllib.parse
 
 st.title("AI Page Manager 🚀")
-st.write("توليد المنشورات والصور بجودة عالية (مجاني 100%)")
+st.write("توليد المنشورات (باللهجة العراقية) والصور بدقة عالية (مجاني 100%)")
 
 # الشريط الجانبي للمفاتيح
 with st.sidebar:
@@ -19,18 +19,19 @@ if st.button("توليد الصورة والبوست"):
     else:
         clean_key = gemini_key.strip()
         
-        with st.spinner("جاري كتابة المنشور وتصميم الصورة الاحترافية..."):
+        with st.spinner("جاري كتابة المنشور بالعراقي وتصميم الصورة الاحترافية..."):
             try:
                 url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key={clean_key}"
                 headers = {"Content-Type": "application/json"}
                 
-                # توجيه Gemini لكتابة البوست وتوليد وصف إنجليزي دقيق للصورة
+                # توجيه دقيق باللهجة العراقية وبدون تخريبط
                 system_instruction = f"""
-                المطلوب منك أمرين:
-                1. اكتب منشور إعلاني احترافي وجذاب للسوشيال ميديا باللغة العربية مع هاشتاقات وايموجيات عن: {prompt_input}
-                2. ترجم واصف الصورة باللغة الإنجليزية بدقة عالية لتوليد صورة واقعية سينمائية فائقة الجودة (Photorealistic, 8k resolution, highly detailed portrait).
-
-                ضع الوصف الإنجليزي فقط في آخر سطر من إجابتك وقبله الكلمة: [IMAGE_PROMPT:]
+                أنت مسوق إلكتروني محترف. المطلوب منك أمرين:
+                1. اكتب منشور إعلاني وجذاب للسوشيال ميديا باللهجة العراقية الدقيقة حصراً (وبدون أي كلام شامي أو فصحى معقدة)، مع إيموجيات وهاشتاقات عن: {prompt_input}
+                2. اصنع وصفاً دقيقاً باللغة الإنجليزية حصراً لتوليد صورة واقعية وجميلة تناسب الطلب (Photorealistic, cinematic lighting, 8k, highly detailed).
+                
+                اجعل إجابتك مرتبة، وفي السطر الأخير تماماً اكتب الوصف الإنجليزي للصورة مسبوقاً حصراً بهذه الكلمة:
+                [IMAGE_PROMPT:] تليها الجملة الإنجليزية.
                 """
                 
                 payload = {"contents": [{"parts": [{"text": system_instruction}]}]}
@@ -46,17 +47,17 @@ if st.button("توليد الصورة والبوست"):
                         english_img_prompt = parts[1].strip()
                     else:
                         post_text = full_text
-                        english_img_prompt = f"Beautiful Arabic woman, photorealistic portrait, 8k resolution"
+                        english_img_prompt = f"Professional photograph, {prompt_input}, 8k resolution, highly detailed"
 
-                    # 1. عرض الصورة بالنموذج المتقدم FLUX
+                    # 1. عرض الصورة باستخدام نموذج FLUX عالي الدقة
                     encoded_prompt = urllib.parse.quote(english_img_prompt)
                     image_url = f"https://image.pollinations.ai/prompt/{encoded_prompt}?width=1024&height=1024&model=flux&nologo=true"
                     
                     st.subheader("🖼️ الصورة:")
                     st.image(image_url)
 
-                    # 2. عرض النص
-                    st.subheader("📝 المنشور:")
+                    # 2. عرض المنشور باللهجة العراقية
+                    st.subheader("📝 المنشور (باللهجة العراقية):")
                     st.write(post_text)
 
                 elif "error" in res:

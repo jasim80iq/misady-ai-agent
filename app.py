@@ -3,26 +3,24 @@ import openai
 import requests
 
 st.set_page_config(
-    page_title="AI Page Manager",
+    page_title="مدير الصفحات الذكي",
     page_icon="🚀",
     layout="centered"
 )
 
-# Strict styling to lock direction and prevent character breakage
+# Proper RTL styling for Arabic text alignment
 st.markdown("""
 <style>
     .stApp {
-        background-color: #f8fafc;
+        direction: rtl;
+        text-align: right;
     }
-    .main-title {
-        text-align: center;
-        color: #1e293b;
-        font-weight: 800;
+    .stTextInput, .stTextArea {
+        direction: rtl;
     }
-    .sub-text {
-        text-align: center;
-        color: #64748b;
-        margin-bottom: 30px;
+    input, textarea {
+        direction: rtl !important;
+        text-align: right !important;
     }
     .stButton>button {
         width: 100%;
@@ -39,96 +37,87 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-st.markdown("<h1 class='main-title'>AI Social Media Manager</h1>", unsafe_allow_html=True)
-st.markdown("<p class='sub-text'>Generate images, marketing captions, and publish automatically.</p>", unsafe_allow_html=True)
+st.title("🚀 مدير الصفحات والذكاء الاصطناعي")
+st.write("أهلاً بك يا جاسم! أنشئ صور منتجاتك واكتب منشوراتك بكل سهولة.")
+st.markdown("---")
 
-# Sidebar with clean English labels to avoid mobile rendering bugs
+# Sidebar
 with st.sidebar:
-    st.header("Settings")
-    openai_api_key = st.text_input("OpenAI API Key", type="password")
+    st.subheader("إعدادات المنظومة")
+    openai_api_key = st.text_input("مفتاح الذكاء الاصطناعي", type="password")
     
     st.markdown("---")
-    st.header("Facebook Integration")
-    fb_page_id = st.text_input("Facebook Page ID")
-    fb_access_token = st.text_input("Page Access Token", type="password")
+    st.subheader("بيانات فيسبوك")
+    fb_page_id = st.text_input("معرف الصفحة")
+    fb_access_token = st.text_input("رمز التوكن", type="password")
     
-    st.info("Enter your OpenAI key to start generating.")
+    st.info("أدخل مفتاح الذكاء الاصطناعي للبدء.")
 
-# Main Form
-with st.form("main_form"):
-    st.subheader("Product Description")
+# Form
+with st.form("form_one"):
+    st.subheader("تفاصيل المنتج")
     product_prompt = st.text_area(
-        "Describe your product or offer:",
-        placeholder="e.g., A luxury men's perfume with oud and amber notes..."
+        "اكتب وصف المنتج هنا:",
+        placeholder="مثلاً: حذاء رياضي شبابي مريح بتصميم عصري..."
     )
     
-    submitted = st.form_submit_button("✨ Generate & Publish")
+    submitted = st.form_submit_button("✨ توليد ونشر")
 
 if submitted:
     if not openai_api_key:
-        st.error("Please enter your OpenAI API Key in the sidebar first.")
+        st.error("الرجاء إدخال مفتاح الذكاء الاصطناعي في القائمة الجانبية أولاً.")
     else:
         openai.api_key = openai_api_key
         
-        # Step 1: Generate Post Text
-        with st.spinner("Writing marketing caption..."):
+        with st.spinner("جاري صياغة المنشور..."):
             try:
                 client = openai.OpenAI(api_key=openai_api_key)
                 response = client.chat.completions.create(
                     model="gpt-4o-mini",
                     messages=[
-                        {"role": "system", "content": "You are a professional digital marketer. Write a catchy marketing caption in Arabic with emojis based on the user's description."},
-                        {"role": "user", "content": f"Write a marketing post for: {product_prompt}"}
+                        {"role": "system", "content": "أنت مسوق إلكتروني محترف. اكتب منشور تسويقي باللغة العربية مع إيموجي."},
+                        {"role": "user", "content": f"اكتب منشور لـ: {product_prompt}"}
                     ]
                 )
                 post_caption = response.choices[0].message.content
             except Exception as e:
-                post_caption = f"عروض مميزة وخصومات رائعة على {product_prompt}!"
+                post_caption = f"عروض مميزة على {product_prompt}!"
 
-        # Step 2: Generate Image
-        with st.spinner("Generating commercial image with DALL-E 3..."):
+        with st.spinner("جاري توليد الصورة..."):
             try:
                 image_response = client.images.generate(
                     model="dall-e-3",
-                    prompt=f"A professional commercial product photography of: {product_prompt}, high resolution, studio lighting, advertising style",
+                    prompt=f"A professional commercial product photography of: {product_prompt}, studio lighting",
                     size="1024x1024",
                     quality="standard",
                     n=1,
                 )
                 image_url = image_response.data[0].url
             except Exception as e:
-                st.error(f"Image generation failed: {e}")
+                st.error(f"خطأ في توليد الصورة: {e}")
                 image_url = None
 
-        # Display Results
         if image_url:
-            st.success("Content generated successfully!")
-            
+            st.success("تم بنجاح!")
             col1, col2 = st.columns(2)
             with col1:
-                st.image(image_url, caption="Generated Image", use_container_width=True)
+                st.image(image_url, caption="الصورة", use_container_width=True)
             with col2:
-                st.markdown("### Marketing Caption:")
+                st.markdown("### النص:")
                 st.info(post_caption)
 
-            # Step 3: Publish to Facebook
             if fb_page_id and fb_access_token:
-                with st.spinner("Publishing to Facebook..."):
+                with st.spinner("جاري النشر على فيسبوك..."):
                     try:
                         url = f"https://graph.facebook.com/v18.0/{fb_page_id}/photos"
-                        payload = {
-                            'url': image_url,
-                            'caption': post_caption,
-                            'access_token': fb_access_token
-                        }
+                        payload = {'url': image_url, 'caption': post_caption, 'access_token': fb_access_token}
                         fb_res = requests.post(url, data=payload)
                         res_data = fb_res.json()
-                        
                         if "id" in res_data:
-                            st.success("Published successfully to Facebook!")
+                            st.success("تم النشر بنجاح على فيسبوك!")
                         else:
-                            st.warning(f"Publishing failed: {res_data.get('error', {}).get('message', 'Unknown error')}")
+                            st.warning(f"تعذر النشر: {res_data.get('error', {}).get('message', 'خطأ')}")
                     except Exception as ex:
-                        st.error(f"Connection error: {ex}")
+                        st.error(f"خطأ اتصال: {ex}")
             else:
-                st.info("Facebook credentials not provided. Results displayed for manual review.")
+                st.info("لم تقم بإدخال بيانات فيسبوك، النتائج معروضة للمراجعة فقط.")

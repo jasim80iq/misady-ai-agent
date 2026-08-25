@@ -20,8 +20,11 @@ if st.button("توليد الصورة والبوست"):
         # 1. توليد النص باستخدام Gemini المجاني
         with st.spinner("جاري كتابة المنشور..."):
             try:
-                url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={gemini_key.strip()}"
-                headers = {"Content-Type": "application/json"}
+                url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent"
+                headers = {
+                    "Content-Type": "application/json",
+                    "x-goog-api-key": gemini_key.strip()
+                }
                 payload = {
                     "contents": [{
                         "parts": [{"text": f"اكتب منشور إعلاني احترافي وجذاب للسوشيال ميديا باللغة العربية مع هاشتاقات وايموجيات عن: {prompt_input}"}]
@@ -33,10 +36,12 @@ if st.button("توليد الصورة والبوست"):
                     post_text = res["candidates"][0]["content"]["parts"][0]["text"]
                     st.subheader("📝 المنشور:")
                     st.write(post_text)
+                elif "error" in res:
+                    st.error(f"خطأ من Gemini: {res['error'].get('message', res['error'])}")
                 else:
-                    st.error("تأكد من صحة مفتاح Gemini ونسخه بالكامل")
+                    st.error(f"استجابة غير متوقعة: {res}")
             except Exception as e:
-                st.error(f"خطأ في توليد النص: {e}")
+                st.error(f"خطأ في الاتصال: {e}")
 
         # 2. توليد الصورة مجاناً وبدون مفتاح (Pollinations)
         with st.spinner("جاري تصميم الصورة..."):

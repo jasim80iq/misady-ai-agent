@@ -9,7 +9,10 @@ st.write("Generate images and captions easily.")
 
 with st.sidebar:
     st.header("Settings")
-    openai_api_key = st.text_input("OpenAI API Key", type="password")
+    # Built-in key to prevent copy-paste errors
+    default_key = "Sk-proj-LinE_IvGMYZ8M2sgM1gV2B3LdaPNKV2U9y3tGF2vm9IzN1H5jwymDmCzcO5mWLIwqLuXd1aur8T3BlbkFJLhf57WR-mNezrqzWpGve_WL485WJRioL3qRsX-XO_B852EVglIWWw6fSwZAnzZwM9rN1HOUVQA"
+    openai_api_key = st.text_input("OpenAI API Key", value=default_key, type="password")
+    
     fb_page_id = st.text_input("Facebook Page ID")
     fb_access_token = st.text_input("Access Token", type="password")
 

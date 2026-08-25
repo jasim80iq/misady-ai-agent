@@ -2,94 +2,91 @@ import streamlit as st
 import openai
 import requests
 
-# Page configuration
 st.set_page_config(
-    page_title="مدير الصفحات والنشر الآلي",
+    page_title="AI Page Manager",
     page_icon="🚀",
     layout="centered"
 )
 
-# Clean CSS to fix vertical text wrapping completely
+# Strict styling to lock direction and prevent character breakage
 st.markdown("""
 <style>
-    /* Force proper Arabic alignment and prevent vertical breaking */
     .stApp {
-        direction: rtl;
-        text-align: right;
+        background-color: #f8fafc;
     }
-    
-    label, p, span, div, h1, h2, h3, h4 {
-        direction: rtl !important;
-        text-align: right !important;
-        unicode-bidi: plaintext;
+    .main-title {
+        text-align: center;
+        color: #1e293b;
+        font-weight: 800;
     }
-
-    /* Modern Button Styling */
+    .sub-text {
+        text-align: center;
+        color: #64748b;
+        margin-bottom: 30px;
+    }
     .stButton>button {
         width: 100%;
         background-color: #2563eb;
         color: white;
         font-weight: bold;
-        border-radius: 10px;
+        border-radius: 8px;
         padding: 12px;
         border: none;
     }
-    
     .stButton>button:hover {
         background-color: #1d4ed8;
     }
 </style>
 """, unsafe_allow_html=True)
 
-st.title("🚀 مدير الصفحات والذكاء الاصطناعي")
-st.write("أهلاً بك يا جاسم! أنشئ صور منتجاتك، اكتب منشوراتك، وانشرها بضغطة زر واحدة.")
-st.markdown("---")
+st.markdown("<h1 class='main-title'>AI Social Media Manager</h1>", unsafe_allow_html=True)
+st.markdown("<p class='sub-text'>Generate images, marketing captions, and publish automatically.</p>", unsafe_allow_html=True)
 
-# Sidebar for Settings (Completely in Arabic to avoid breaking)
+# Sidebar with clean English labels to avoid mobile rendering bugs
 with st.sidebar:
-    st.header("⚙️ الإعدادات الأساسية")
-    openai_api_key = st.text_input("مفتاح الذكاء الاصطناعي (API Key)", type="password", placeholder="أدخل المفتاح هنا")
+    st.header("Settings")
+    openai_api_key = st.text_input("OpenAI API Key", type="password")
     
     st.markdown("---")
-    st.header("🌐 ربط صفحة فيسبوك")
-    fb_page_id = st.text_input("رقم تعريف الصفحة (Page ID)", placeholder="أدخل رقم الصفحة")
-    fb_access_token = st.text_input("رمز وصول الصفحة (Access Token)", type="password", placeholder="أدخل الرمز هنا")
+    st.header("Facebook Integration")
+    fb_page_id = st.text_input("Facebook Page ID")
+    fb_access_token = st.text_input("Page Access Token", type="password")
     
-    st.info("قم بإدخال مفتاح الذكاء الاصطناعي لتفعيل التوليد.")
+    st.info("Enter your OpenAI key to start generating.")
 
-# Main Form Area
-with st.form("publishing_form"):
-    st.subheader("📝 تفاصيل المنتج أو المنشور")
+# Main Form
+with st.form("main_form"):
+    st.subheader("Product Description")
     product_prompt = st.text_area(
-        "اكتب وصفاً مختصراً للمنتج أو العرض:",
-        placeholder="مثلاً: عطر رجالي فخم بتركيبة العود والعنبر..."
+        "Describe your product or offer:",
+        placeholder="e.g., A luxury men's perfume with oud and amber notes..."
     )
     
-    submitted = st.form_submit_button("✨ ابدأ توليد المحتوى والنشر الآلي")
+    submitted = st.form_submit_button("✨ Generate & Publish")
 
 if submitted:
     if not openai_api_key:
-        st.error("الرجاء إدخال مفتاح الذكاء الاصطناعي في القائمة الجانبية أولاً.")
+        st.error("Please enter your OpenAI API Key in the sidebar first.")
     else:
         openai.api_key = openai_api_key
         
         # Step 1: Generate Post Text
-        with st.spinner("جاري صياغة المنشور التسويقي..."):
+        with st.spinner("Writing marketing caption..."):
             try:
                 client = openai.OpenAI(api_key=openai_api_key)
                 response = client.chat.completions.create(
                     model="gpt-4o-mini",
                     messages=[
-                        {"role": "system", "content": "أنت مسوق إلكتروني محترف تكتب منشورات تسويقية جذابة باللغة العربية مع إيموجي مناسبة."},
-                        {"role": "user", "content": f"اكتب منشور تسويقي قصير وجذاب بالاعتماد على هذا الوصف: {product_prompt}"}
+                        {"role": "system", "content": "You are a professional digital marketer. Write a catchy marketing caption in Arabic with emojis based on the user's description."},
+                        {"role": "user", "content": f"Write a marketing post for: {product_prompt}"}
                     ]
                 )
                 post_caption = response.choices[0].message.content
             except Exception as e:
-                post_caption = f"عروض مميزة وخصومات رائعة على {product_prompt}! لا تفوت الفرصة."
+                post_caption = f"عروض مميزة وخصومات رائعة على {product_prompt}!"
 
         # Step 2: Generate Image
-        with st.spinner("جاري توليد الصورة بالذكاء الاصطناعي..."):
+        with st.spinner("Generating commercial image with DALL-E 3..."):
             try:
                 image_response = client.images.generate(
                     model="dall-e-3",
@@ -100,24 +97,23 @@ if submitted:
                 )
                 image_url = image_response.data[0].url
             except Exception as e:
-                st.error(f"حدث خطأ أثناء توليد الصورة: {e}")
+                st.error(f"Image generation failed: {e}")
                 image_url = None
 
         # Display Results
         if image_url:
-            st.success("تم توليد المحتوى والصورة بنجاح!")
+            st.success("Content generated successfully!")
             
             col1, col2 = st.columns(2)
             with col1:
-                st.markdown("### الصورة المولّدة:")
-                st.image(image_url, use_container_width=True)
+                st.image(image_url, caption="Generated Image", use_container_width=True)
             with col2:
-                st.markdown("### النص التسويقي:")
+                st.markdown("### Marketing Caption:")
                 st.info(post_caption)
 
             # Step 3: Publish to Facebook
             if fb_page_id and fb_access_token:
-                with st.spinner("جاري النشر تلقائياً على صفحة فيسبوك..."):
+                with st.spinner("Publishing to Facebook..."):
                     try:
                         url = f"https://graph.facebook.com/v18.0/{fb_page_id}/photos"
                         payload = {
@@ -129,10 +125,10 @@ if submitted:
                         res_data = fb_res.json()
                         
                         if "id" in res_data:
-                            st.success("تم النشر بنجاح على صفحتك في فيسبوك!")
+                            st.success("Published successfully to Facebook!")
                         else:
-                            st.warning(f"تعذر النشر التلقائي: {res_data.get('error', {}).get('message', 'خطأ غير معروف')}")
+                            st.warning(f"Publishing failed: {res_data.get('error', {}).get('message', 'Unknown error')}")
                     except Exception as ex:
-                        st.error(f"خطأ في الاتصال بواجهة فيسبوك: {ex}")
+                        st.error(f"Connection error: {ex}")
             else:
-                st.info("ملاحظة: لم يتم إدخال بيانات فيسبوك، تم عرض النتائج لك للمراجعة اليدوية.")
+                st.info("Facebook credentials not provided. Results displayed for manual review.")

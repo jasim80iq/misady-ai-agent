@@ -1,75 +1,108 @@
 import streamlit as st
-import openai
+import anthropic
 import requests
 
-st.set_page_config(page_title="AI Page Manager", layout="centered")
+st.set_page_config(page_title="AI Page Manager - Claude + Hunyuan", layout="centered")
 
-st.title("AI Page Manager")
-st.write("Generate images and captions easily.")
+st.title("AI Page Manager 🚀")
+st.write("توليد المنشورات والصورة باستخدام Claude للكبشن و Hunyuan للصور.")
 
+# الشريط الجانبي للمفاتيح
 with st.sidebar:
-    st.header("Settings")
-    openai_api_key = st.text_input("OpenAI API Key", type="password", placeholder="sk-proj-...")
-    
-    fb_page_id = st.text_input("Facebook Page ID")
-    fb_access_token = st.text_input("Access Token", type="password")
+    st.header("إعدادات المفاتيح (API Keys)")
+    anthropic_api_key = st.text_input("Claude (Anthropic) API Key", type="password", placeholder="sk-ant-...")
+    replicate_api_key = st.text_input("Hunyuan (Replicate) API Token", type="password", placeholder="r8_...")
 
+# نموذج الإدخال
 with st.form("my_form"):
-    prompt = st.text_area("Product Description:", "A modern leather shoes...")
-    submit = st.form_submit_button("Generate & Publish")
+    user_prompt = st.text_area("وصف المنتج أو الفكرة بالعربي:", "حذاء جلدي فاخر بتصميم عصري وأنيق...")
+    submit = st.form_submit_button("توليد الصورة والبوست")
 
 if submit:
-    if not openai_api_key:
-        st.error("Please enter your OpenAI API Key in the sidebar.")
+    if not anthropic_api_key or not replicate_api_key:
+        st.error("يرجى إدخال مفتاح Claude ومفتاح Replicate/Hunyuan من القائمة الجانبية أولاً.")
     else:
-        # Clean user prompt completely
-        safe_prompt = "".join(c for c in prompt if ord(c) < 128).strip()
-        if not safe_prompt:
-            safe_prompt = "apple product"
-
-        openai.api_key = openai_api_key
-        client = openai.OpenAI(api_key=openai_api_key)
-        
-        # Step 1: Generate Post Caption using GPT-4o-mini
-        with st.spinner("Generating caption..."):
+        # 1. توليد المنشور والـ Prompt الإنجليزي باستخدام Claude
+        with st.spinner("جاري كتابة المنشور العربي وتحضير الوصف بواسطة Claude..."):
             try:
-                res = client.chat.completions.create(
-                    model="gpt-4o-mini",
-                    messages=[{"role": "user", "content": f"Write a short catchy marketing caption in Arabic for: {safe_prompt}"}]
+                client_anthropic = anthropic.Anthropic(api_key=anthropic_api_key)
+                
+                # طلب الكبشن والوصف من كلاود
+                msg = client_anthropic.messages.create(
+                    model="claude-3-5-sonnet-20240620",
+                    max_tokens=1000,
+                    messages=[
+                        {
+                            "role": "user",
+                            "content": f"""اكتب منشور تسويقي جذاب بالعربي مع هشتاغات للمنتج التالي: {user_prompt}
+                            ثم اذكر لي في السطر الأخير ترجمة دقيقة ومفصلة باللغة الإنجليزية لوصف الصورة ليتم إرسالها لمولد الصور.
+                            اجعل السطر الأخير يفتح بـ PROMPT_EN: """
+                        }
+                    ]
                 )
-                caption = res.choices[0].message.content
+                
+                full_text = msg.content[0].text
+                
+                # فصل الكبشن عن وصف الصورة الإنجليزي
+                if "PROMPT_EN:" in full_text:
+                    caption, english_prompt = full_text.split("PROMPT_EN:")
+                else:
+                    caption = full_text
+                    english_prompt = "A high quality commercial studio product photograph of " + user_prompt
+                    
             except Exception as e:
-                caption = f"عروض مميزة وخصومات رائعة!"
+                st.error(f"خطأ في Claude: {e}")
+                caption = None
+                english_prompt = None
 
-        # Step 2: Use a guaranteed safe image generation approach without string encoding crashes
-        with st.spinner("Generating image..."):
-            try:
-                # Direct call with strict ASCII prompt enforcement
-                img_res = client.images.generate(
-                    model="dall-e-2",
-                    prompt="A professional commercial studio photo of " + safe_prompt,
-                    size="512x512",
-                    n=1
-                )
-                img_url = img_res.data[0].url
-            except Exception as e:
-                # Fallback placeholder image if any API restriction occurs
-                img_url = "https://images.unsplash.com/photo-1560769629-975ec94e6a86?w=500"
-                st.warning("Using fallback display image due to API image restriction.")
-
-        if img_url:
-            st.success("Generated successfully!")
-            st.image(img_url, use_container_width=True)
-            st.info(caption)
-
-            if fb_page_id and fb_access_token:
+        # 2. توليد الصورة باستخدام نموذج Hunyuan (عبر Replicate API)
+        if caption and english_prompt:
+            st.info(caption.strip())
+            
+            with st.spinner("جاري رسم الصورة بواسطة نموذج Hunyuan (HY3)..."):
                 try:
-                    url = f"https://graph.facebook.com/v18.0/{fb_page_id}/photos"
-                    payload = {'url': img_url, 'caption': caption, 'access_token': fb_access_token}
-                    fb_res = requests.post(url, data=payload).json()
-                    if "id" in fb_res:
-                        st.success("Published to Facebook!")
+                    headers = {
+                        "Authorization": f"Token {replicate_api_key}",
+                        "Content-Type": "application/json"
+                    }
+                    
+                    # استدعاء نموذج Hunyuan-DiT على Replicate
+                    payload = {
+                        "version": "tencent/hunyuan-dit", 
+                        "input": {
+                            "prompt": english_prompt.strip(),
+                            "width": 1024,
+                            "height": 1024
+                        }
+                    }
+                    
+                    # إرسال طلب التوليد
+                    res = requests.post("https://api.replicate.com/v1/predictions", headers=headers, json={
+                        "version": "920e140675750f7e5e4965b0e51786576b53a473e6a928ef231d683050c82270", # Hunyuan-DiT model hash
+                        "input": {"prompt": english_prompt.strip()}
+                    })
+                    
+                    response_json = res.json()
+                    
+                    if "urls" in response_json:
+                        get_url = response_json["urls"]["get"]
+                        # الانتظار لحين اكتمال الصورة
+                        import time
+                        status = "processing"
+                        while status not in ["succeeded", "failed"]:
+                            time.sleep(2)
+                            check_res = requests.get(get_url, headers=headers).json()
+                            status = check_res.get("status")
+                            if status == "succeeded":
+                                img_url = check_res["output"][0]
+                                st.image(img_url, caption="صورة مولدة بواسطة Hunyuan", use_container_width=True)
+                                st.success("تم التوليد بنجاح وبأعلى دقة!")
+                                break
+                            elif status == "failed":
+                                st.error("فشل توليد الصورة من Hunyuan.")
+                                break
                     else:
-                        st.warning("Publish failed.")
+                        st.error(f"خطأ في الاتصال بـ Hunyuan: {response_json.get('detail', 'يرجى التأكد من التوكن')}")
+                        
                 except Exception as ex:
-                    st.error(f"FB error: {ex}")
+                    st.error(f"خطأ غير متوقع: {ex}")

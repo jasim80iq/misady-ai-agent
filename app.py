@@ -17,11 +17,11 @@ if st.button("توليد الصورة والبوست"):
     if not gemini_key:
         st.error("يرجى إدخال مفتاح Gemini في الشريط الجانبي أولاً!")
     else:
-        # 1. توليد النص باستخدام Gemini المجاني (gemini-2.5-flash)
+        # 1. توليد النص باستخدام Gemini المجاني (gemini-3.6-flash)
         with st.spinner("جاري كتابة المنشور..."):
             try:
                 clean_key = gemini_key.strip()
-                url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={clean_key}"
+                url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key={clean_key}"
                 headers = {"Content-Type": "application/json"}
                 payload = {
                     "contents": [{

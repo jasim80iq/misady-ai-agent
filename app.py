@@ -9,7 +9,6 @@ st.write("Generate images and captions easily.")
 
 with st.sidebar:
     st.header("Settings")
-    # Clean input field for secure manual entry
     openai_api_key = st.text_input("OpenAI API Key", type="password", placeholder="sk-proj-...")
     
     fb_page_id = st.text_input("Facebook Page ID")
@@ -26,21 +25,37 @@ if submit:
         openai.api_key = openai_api_key
         client = openai.OpenAI(api_key=openai_api_key)
         
+        # Step 1: Translate and optimize prompt to English for DALL-E and GPT
+        with st.spinner("Processing prompt..."):
+            try:
+                translation_res = client.chat.completions.create(
+                    model="gpt-4o-mini",
+                    messages=[
+                        {"role": "system", "content": "Translate the user's description into a detailed English prompt suitable for commercial image generation and marketing. Return ONLY the English translation."},
+                        {"role": "user", "content": prompt}
+                    ]
+                )
+                english_prompt = translation_res.choices[0].message.content
+            except Exception as e:
+                english_prompt = "Professional commercial photography, " + prompt
+
+        # Step 2: Generate Post Caption
         with st.spinner("Generating caption..."):
             try:
                 res = client.chat.completions.create(
                     model="gpt-4o-mini",
-                    messages=[{"role": "user", "content": f"Write a short catchy marketing caption for: {prompt}"}]
+                    messages=[{"role": "user", "content": f"Write a short catchy marketing caption in Arabic based on this description: {prompt}"}]
                 )
                 caption = res.choices[0].message.content
             except Exception as e:
-                caption = f"Great offer on {prompt}!"
+                caption = f"عروض مميزة وخصومات رائعة!"
 
+        # Step 3: Generate Image using English prompt
         with st.spinner("Generating image..."):
             try:
                 img_res = client.images.generate(
                     model="dall-e-2",
-                    prompt=f"Professional product photography of {prompt}",
+                    prompt=english_prompt,
                     size="512x512",
                     n=1
                 )

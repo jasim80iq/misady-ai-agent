@@ -4,7 +4,7 @@ import requests
 
 # Page configuration
 st.set_page_config(
-    page_title="مدير الصفحات والنشر الآلي بالذكاء الاصطناعي",
+    page_title="مدير الصفحات والنشر الآلي",
     page_icon="🤖",
     layout="centered"
 )
@@ -47,7 +47,7 @@ with st.form("publishing_form"):
     st.subheader("📝 تفاصيل المنتج أو المنشور")
     product_prompt = st.text_area(
         "اكتب وصفاً مختصراً للمنتج أو العرض:",
-        placeholder="مثلاً: حذاء رياضي شبابي جديد ذو تصميم عالي الجودة ومريح، لون أسود وأبيض..."
+        placeholder="مثلاً: حذاء رياضي شبابي جديد ذو تصميم عالي الجودة ومريح..."
     )
     
     submitted = st.form_submit_button("✨ ولّد الصورة والمنشور وانشر الآن")
@@ -61,14 +61,14 @@ if submitted:
         # Step 1: Generate Marketing Post Text
         with st.spinner("جاري صياغة المنشور التسويقي..."):
             try:
-                response = openai.chat.completions.create(
+                client = openai.OpenAI(api_key=openai_api_key)
+                response = client.chat.completions.create(
                     model="gpt-4o-mini",
                     messages=[
                         {"role": "system", "content": "أنت مسوق إلكتروني محترف تكتب منشورات جذابة لصفحات التسوق باللغة العربية مع الإيموجي المناسبة."},
-                        {"role": "name", "content": product_prompt},
                         {"role": "user", "content": f"اكتب منشور تسويقي قصير وجذاب لمنتج بالاعتماد على الوصف التالي: {product_prompt}"}
                     ]
-                ]
+                )
                 post_caption = response.choices[0].message.content
             except Exception as e:
                 post_caption = f"عروض مميزة وخصومات رائعة على {product_prompt}! لا تفوت الفرصة."
@@ -76,7 +76,7 @@ if submitted:
         # Step 2: Generate Image using DALL-E 3
         with st.spinner("جاري توليد الصورة بالذكاء الاصطناعي..."):
             try:
-                image_response = openai.images.generate(
+                image_response = client.images.generate(
                     model="dall-e-3",
                     prompt=f"A professional commercial product photography of: {product_prompt}, high resolution, studio lighting, advertising style",
                     size="1024x1024",
@@ -94,7 +94,7 @@ if submitted:
             
             col1, col2 = st.columns(2)
             with col1:
-                st.image(image_url, caption="الصورة المולّدة", use_column_width=True)
+                st.image(image_url, caption="الصورة المولّدة", use_container_width=True)
             with col2:
                 st.markdown("### 📄 المنشور المقترح:")
                 st.write(post_caption)
@@ -103,7 +103,6 @@ if submitted:
             if fb_page_id and fb_access_token:
                 with st.spinner("جاري النشر تلقائياً على صفحة فيسبوك..."):
                     try:
-                        # Graph API URL for posting photos with captions
                         url = f"https://graph.facebook.com/v18.0/{fb_page_id}/photos"
                         payload = {
                             'url': image_url,
@@ -120,9 +119,4 @@ if submitted:
                     except Exception as ex:
                         st.error(f"خطأ في الاتصال بواجهة برمجة تطبيقات فيسبوك: {ex}")
             else:
-                st.info("💡 ملاحظة: لم يتم إدخال بيانات فيسبوك (Page ID و Token)، لذا تم عرض النتيجة لك هنا للمراجعة اليدوية فقط.")
-```eof
-
-تفضل يا جاسم، كتبت لك الكود المتكامل للـ Streamlit (`app.py`) اللي يدمج كل العمليات: إدخال الوصف، توليد الصورة الاحترافية بـ DALL-E، كتابة المنشور التسويقي بالذكاء الاصطناعي، ونشره مباشرة على صفحتك في فيسبوك إذا حبيت! 
-
-تگدر تنسخ هذا الكود وتخليه بملف التطبيق الخاص بك على ستريمليت، وكلشي راح يصير آلي وسهل. عذراً منك مرة ثانية على كل العصبية والدوخة، وإن شاء الله هالأداة تريحك وتفيدك بشغلك هواية! تقبل اعتذاري وموجود لأي مساعدة تانية تحتاجها.
+                st.info("💡 ملاحظة: لم يتم إدخال بيانات فيسبوك، لذا تم عرض النتيجة لك هنا للمراجعة.")

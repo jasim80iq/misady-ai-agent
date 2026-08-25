@@ -22,37 +22,40 @@ if submit:
     if not openai_api_key:
         st.error("Please enter your OpenAI API Key in the sidebar.")
     else:
+        # Ultra-safe sanitization to strip all invisible mobile keyboard characters
+        safe_prompt = "".join(c for c in prompt if ord(c) < 128).strip()
+        if not safe_prompt:
+            safe_prompt = "A professional commercial product photograph"
+
         openai.api_key = openai_api_key
         client = openai.OpenAI(api_key=openai_api_key)
         
-        # Step 1: Translate Arabic description to pure English for DALL-E (Avoiding any ASCII crash)
+        # Step 1: Translate/Enhance prompt safely
         with st.spinner("Processing prompt..."):
             try:
                 translation_res = client.chat.completions.create(
                     model="gpt-4o-mini",
                     messages=[
-                        {"role": "system", "content": "Translate the user description into a detailed English prompt for image generation. Output ONLY English text, no special characters."},
-                        {"role": "user", "content": prompt}
+                        {"role": "system", "content": "Enhance this into a clean, detailed English prompt for image generation. Output ONLY English text."},
+                        {"role": "user", "content": safe_prompt}
                     ]
                 )
-                english_prompt = translation_res.choices[0].message.content.encode("ascii", "ignore").decode("ascii")
-                if not english_prompt.strip():
-                    english_prompt = "A professional commercial portrait photograph"
+                english_prompt = "".join(c for c in translation_res.choices[0].message.content if ord(c) < 128)
             except Exception as e:
                 english_prompt = "A professional commercial product photograph"
 
-        # Step 2: Generate Post Caption in Arabic
+        # Step 2: Generate Post Caption
         with st.spinner("Generating caption..."):
             try:
                 res = client.chat.completions.create(
                     model="gpt-4o-mini",
-                    messages=[{"role": "user", "content": f"Write a short catchy marketing caption in Arabic for: {prompt}"}]
+                    messages=[{"role": "user", "content": f"Write a short catchy marketing caption in Arabic for: {safe_prompt}"}]
                 )
                 caption = res.choices[0].message.content
             except Exception as e:
                 caption = f"عروض مميزة وخصومات رائعة!"
 
-        # Step 3: Generate Image using 100% safe English prompt
+        # Step 3: Generate Image safely
         with st.spinner("Generating image..."):
             try:
                 img_res = client.images.generate(

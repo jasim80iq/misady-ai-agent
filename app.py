@@ -3,7 +3,7 @@ import requests
 import urllib.parse
 
 st.title("AI Page Manager 🚀")
-st.write("توليد المنشورات (باللهجة العراقية) والصور بدقة عالية (مجاني 100%)")
+st.write("توليد المنشورات باللهجة العراقية والصور الواقعية (مجاني 100%)")
 
 # الشريط الجانبي للمفاتيح
 with st.sidebar:
@@ -19,19 +19,20 @@ if st.button("توليد الصورة والبوست"):
     else:
         clean_key = gemini_key.strip()
         
-        with st.spinner("جاري كتابة المنشور بالعراقي وتصميم الصورة الاحترافية..."):
+        with st.spinner("جاري تحليل الطلب وتصميم البوست والصورة الواقعية..."):
             try:
                 url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key={clean_key}"
                 headers = {"Content-Type": "application/json"}
                 
-                # توجيه دقيق باللهجة العراقية وبدون تخريبط
+                # توجيه ذكي لشرح التفاصيل البصرية للأكلات والثقافة العراقية
                 system_instruction = f"""
-                أنت مسوق إلكتروني محترف. المطلوب منك أمرين:
-                1. اكتب منشور إعلاني وجذاب للسوشيال ميديا باللهجة العراقية الدقيقة حصراً (وبدون أي كلام شامي أو فصحى معقدة)، مع إيموجيات وهاشتاقات عن: {prompt_input}
-                2. اصنع وصفاً دقيقاً باللغة الإنجليزية حصراً لتوليد صورة واقعية وجميلة تناسب الطلب (Photorealistic, cinematic lighting, 8k, highly detailed).
-                
+                أنت خبير تسويق عراقي ومصمم بصري احترافي. المطلوب منك:
+                1. كتابة منشور إعلاني وجذاب للسوشيال ميديا باللهجة العراقية الدقيقة والجميلة جداً مع إيموجيات وهاشتاقات عن: {prompt_input}
+                2. صياغة وصف بصري إنجليزي دقيق جداً للصورة (Visual English Prompt) يفهمه الذكاء الاصطناعي الأجنبي.
+                ملاحظة مهمة جداً: إذا كان الطلب يتعلق بأكلة شعبية أو عنصر ثفافي عراقي (مثلاً: ثريد بامية، دولمة، مسكوف، كبة)، لا تترجم اسم الأكلة حرفياً، بل اشرح مكوناتها البصرية بالإنجليزية (مثلاً للثريد: authentic traditional Iraqi thareed bamia, rich red tomato stew with tender green okra pods and lamb meat poured over torn flatbread in a wide round metal tray, photorealistic culinary photography).
+
                 اجعل إجابتك مرتبة، وفي السطر الأخير تماماً اكتب الوصف الإنجليزي للصورة مسبوقاً حصراً بهذه الكلمة:
-                [IMAGE_PROMPT:] تليها الجملة الإنجليزية.
+                [IMAGE_PROMPT:] تليها الجملة الإنجليزية التفصيلية.
                 """
                 
                 payload = {"contents": [{"parts": [{"text": system_instruction}]}]}
@@ -47,16 +48,16 @@ if st.button("توليد الصورة والبوست"):
                         english_img_prompt = parts[1].strip()
                     else:
                         post_text = full_text
-                        english_img_prompt = f"Professional photograph, {prompt_input}, 8k resolution, highly detailed"
+                        english_img_prompt = f"authentic Iraqi dish, {prompt_input}, detailed food photography, photorealistic, 8k"
 
-                    # 1. عرض الصورة باستخدام نموذج FLUX عالي الدقة
+                    # 1. عرض الصورة باستخدام نموذج FLUX
                     encoded_prompt = urllib.parse.quote(english_img_prompt)
                     image_url = f"https://image.pollinations.ai/prompt/{encoded_prompt}?width=1024&height=1024&model=flux&nologo=true"
                     
                     st.subheader("🖼️ الصورة:")
                     st.image(image_url)
 
-                    # 2. عرض المنشور باللهجة العراقية
+                    # 2. عرض المنشور
                     st.subheader("📝 المنشور (باللهجة العراقية):")
                     st.write(post_text)
 
